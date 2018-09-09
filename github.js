@@ -3,30 +3,10 @@ const dotenv = require('dotenv');
 dotenv.load();
 
 // https://github.com/pksunkara/octonode
-// Rate limited to 5000 calls per hour
+// Rate limit: 5000 calls per hour
 const github = require('octonode');
-const organization = 'kode-dev';
 const client = github.client(process.env.GITHUB_ACCESS_TOKEN);
-const ghOrg = client.org(organization);
-
-// client.get('/user', {}, function (err, status, body, headers) {
-//   console.log(body); //json object
-// });
-
-// var ghme           = client.me();
-// var ghuser         = client.user('pksunkara');
-// var ghrepo         = client.repo('pksunkara/hub');
-// var ghorg          = client.org('flatiron');
-// var ghissue        = client.issue('pksunkara/hub', 37);
-// var ghmilestone    = client.milestone('pksunkara/hub', 37);
-// var ghlabel        = client.label('pksunkara/hub', 'todo');
-// var ghpr           = client.pr('pksunkara/hub', 37);
-// var ghrelease      = client.release('pksunkara/hub', 37);
-// var ghgist         = client.gist();
-// var ghteam         = client.team(37);
-// var ghproject      = client.project('pksunkara/hub', 37);
-// var ghnotification = client.notification(37);
-// var ghsearch = client.search();
+const ghOrg = client.org(process.env.GITHUB_ORGANIZATION);
 
 async function createRepo({ name, description, private=true }) {
   let repo;
@@ -38,26 +18,79 @@ async function createRepo({ name, description, private=true }) {
     });
   }
   catch(e) {
-    throw new Error('An error occurred while create a repo.\n', e);
+    throw new Error('An error occurred while creating a repo.');
   }
-  return repo[0];
+  return repo;
 };
 
-app.get('/generate_assessment', function (req, res) {
+async function addFiles() {
+
+}
+
+app.get('/generate_assessment', async function (req, res) {
   const name        = 'NEW TEST REPO',
         description = 'This is a test repository.',
         private     = false;
 
-  // Create new repo
-  const repo = createRepo({
-    name,
-    description,
-    private,
-  });
+  let repo;
+  try {
+    repo = await createRepo({
+      name,
+      description,
+      private,
+    });
+  }
+  catch(e) {
+    res
+      .status(500)
+      .send(e.message);
+  }
 
-  // Add contents
-  // Add collaborators
+  // Add files
   // Return link
 
-  res.send('Hello, world!');
+  res.send('Repo was successfully created.');
+});
+
+app.put('/repos/:repoId/collaborators/:collaboratorId', async function(req, res) {
+  const { repoId, collaboratorId } = req.params;
+
+  const owner    = process.env.GITHUB_ORGANIZATION_OWNER,
+        repo     = repoId,
+        username = collaboratorId,
+        path     = `/repos/${owner}/${repo}/collaborators/${username}`,
+        options  = {
+          permission: 'push',
+        };
+
+  try {
+    await client.putAsync(path, options);
+  }
+  catch(e) {
+    res
+      .status(500)
+      .send(`An error occurred while adding ${collaboratorId} as a collaborator to ${repoId}.`);
+  }
+
+  res.send(`${collaboratorId} was successfully added as a collaborator to ${repoId}`)
+});
+
+app.delete('/repos/:repoId/collaborators/:collaboratorId', async function(req, res) {
+  const { repoId, collaboratorId } = req.params;
+
+  const owner    = process.env.GITHUB_ORGANIZATION_OWNER,
+        repo     = repoId,
+        username = collaboratorId,
+        path     = `/repos/${owner}/${repo}/collaborators/${username}`;
+
+  try {
+    await client.delAsync(path, {});
+  }
+  catch(e) {
+    res
+      .status(500)
+      .send(`An error occurred while removing ${collaboratorId} as a collaborator to ${repoId}.`)
+  }
+
+  res.send(`${collaboratorId} was successfully removed as a collaborator to ${repoId}`)
 });
