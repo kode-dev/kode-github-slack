@@ -1,15 +1,17 @@
 const app = require('./app.js');
-const github = require('octonode');
-
-// ENV
 const dotenv = require('dotenv');
 dotenv.load();
 
+// https://github.com/pksunkara/octonode
+// Rate limited to 5000 calls per hour
+const github = require('octonode');
+const organization = 'kode-dev';
 const client = github.client(process.env.GITHUB_ACCESS_TOKEN);
+const ghOrg = client.org(organization);
 
-client.get('/user', {}, function (err, status, body, headers) {
-  console.log(body); //json object
-});
+// client.get('/user', {}, function (err, status, body, headers) {
+//   console.log(body); //json object
+// });
 
 // var ghme           = client.me();
 // var ghuser         = client.user('pksunkara');
@@ -24,14 +26,38 @@ client.get('/user', {}, function (err, status, body, headers) {
 // var ghteam         = client.team(37);
 // var ghproject      = client.project('pksunkara/hub', 37);
 // var ghnotification = client.notification(37);
-
 // var ghsearch = client.search();
 
-app.get('/clone_repo', function (req, res) {
+async function createRepo({ name, description, private=true }) {
+  let repo;
+  try {
+    repo = await ghOrg.repoAsync({
+      name,
+      description,
+      private,
+    });
+  }
+  catch(e) {
+    throw new Error('An error occurred while create a repo.\n', e);
+  }
+  return repo[0];
+};
 
-    // client.get('/users/stevenjing', {}, function (err, status, body, headers) {
-    //     console.log(body); //json object
-    // });
+app.get('/generate_assessment', function (req, res) {
+  const name        = 'NEW TEST REPO',
+        description = 'This is a test repository.',
+        private     = false;
 
-    res.send('Hello, world!');
+  // Create new repo
+  const repo = createRepo({
+    name,
+    description,
+    private,
+  });
+
+  // Add contents
+  // Add collaborators
+  // Return link
+
+  res.send('Hello, world!');
 });
