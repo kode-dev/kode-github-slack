@@ -9,9 +9,8 @@ const client = github.client(process.env.GITHUB_ACCESS_TOKEN);
 const ghOrg = client.org(process.env.GITHUB_ORGANIZATION);
 
 async function createRepo({ name, description, private=true }) {
-  let repo;
   try {
-    repo = await ghOrg.repoAsync({
+    return await ghOrg.repoAsync({
       name,
       description,
       private,
@@ -20,25 +19,29 @@ async function createRepo({ name, description, private=true }) {
   catch(e) {
     throw new Error('An error occurred while creating a repo.');
   }
-  return repo;
 };
 
-async function addFiles() {
+async function forkRepo(repo) {
+  const owner   = process.env.GITHUB_ORGANIZATION,
+        path    = `/repos/${owner}/${repo}/forks`,
+        options = {
+          organization: process.env.GITHUB_ORGANIZATION,
+        };
 
+  try {
+    return await client.postAsync(path, options);
+  }
+  catch(e) {
+    throw new Error(`An error occurred while forking ${repo}`);
+  }
 }
 
-app.get('/generate_assessment', async function (req, res) {
-  const name        = 'NEW TEST REPO',
-        description = 'This is a test repository.',
-        private     = false;
+app.post('/generate_assessment', async function (req, res) {
+  const repo = 'NEW-TEST-REPO';
 
-  let repo;
+  let response;
   try {
-    repo = await createRepo({
-      name,
-      description,
-      private,
-    });
+    response = await forkRepo(repo);
   }
   catch(e) {
     res
@@ -46,7 +49,6 @@ app.get('/generate_assessment', async function (req, res) {
       .send(e.message);
   }
 
-  // Add files
   // Return link
 
   res.send('Repo was successfully created.');
@@ -55,7 +57,7 @@ app.get('/generate_assessment', async function (req, res) {
 app.put('/repos/:repoId/collaborators/:collaboratorId', async function(req, res) {
   const { repoId, collaboratorId } = req.params;
 
-  const owner    = process.env.GITHUB_ORGANIZATION_OWNER,
+  const owner    = process.env.GITHUB_ORGANIZATION,
         repo     = repoId,
         username = collaboratorId,
         path     = `/repos/${owner}/${repo}/collaborators/${username}`,
@@ -78,7 +80,7 @@ app.put('/repos/:repoId/collaborators/:collaboratorId', async function(req, res)
 app.delete('/repos/:repoId/collaborators/:collaboratorId', async function(req, res) {
   const { repoId, collaboratorId } = req.params;
 
-  const owner    = process.env.GITHUB_ORGANIZATION_OWNER,
+  const owner    = process.env.GITHUB_ORGANIZATION,
         repo     = repoId,
         username = collaboratorId,
         path     = `/repos/${owner}/${repo}/collaborators/${username}`;
