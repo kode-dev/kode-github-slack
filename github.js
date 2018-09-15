@@ -11,6 +11,7 @@ const ghOrg = client.org(process.env.GITHUB_ORGANIZATION);
 
 require('./helpers');
 
+// Generate repo for candidate
 app.post('/generate_assessment', async function (req, res) {
   const repo = 'NEW-TEST-REPO';
 
@@ -24,12 +25,13 @@ app.post('/generate_assessment', async function (req, res) {
       .send(e.message);
   }
 
-  // Return link
-
   res.send('Repo was successfully created.');
 });
 
+// Add collaborator to repo
 app.put('/repos/:repoId/collaborators/:collaboratorId', async function(req, res) {
+  // repoId: kode-dev
+  // collaboratorId: candidate username
   const { repoId, collaboratorId } = req.params;
 
   const owner    = process.env.GITHUB_ORGANIZATION,
@@ -52,7 +54,10 @@ app.put('/repos/:repoId/collaborators/:collaboratorId', async function(req, res)
   res.send(`${collaboratorId} was successfully added as a collaborator to ${repoId}`)
 });
 
+// Remove collaborator from repo
 app.delete('/repos/:repoId/collaborators/:collaboratorId', async function(req, res) {
+  // repoId: kode-dev
+  // collboratorId: candidate username
   const { repoId, collaboratorId } = req.params;
 
   const owner    = process.env.GITHUB_ORGANIZATION,
