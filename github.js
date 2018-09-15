@@ -1,4 +1,5 @@
 const app = require('./app.js');
+const shell = require('shelljs');
 const dotenv = require('dotenv');
 dotenv.load();
 
@@ -8,33 +9,7 @@ const github = require('octonode');
 const client = github.client(process.env.GITHUB_ACCESS_TOKEN);
 const ghOrg = client.org(process.env.GITHUB_ORGANIZATION);
 
-async function createRepo({ name, description, private=true }) {
-  try {
-    return await ghOrg.repoAsync({
-      name,
-      description,
-      private,
-    });
-  }
-  catch(e) {
-    throw new Error('An error occurred while creating a repo.');
-  }
-};
-
-async function forkRepo(repo) {
-  const owner   = process.env.GITHUB_ORGANIZATION,
-        path    = `/repos/${owner}/${repo}/forks`,
-        options = {
-          organization: process.env.GITHUB_ORGANIZATION,
-        };
-
-  try {
-    return await client.postAsync(path, options);
-  }
-  catch(e) {
-    throw new Error(`An error occurred while forking ${repo}`);
-  }
-}
+require('./helpers');
 
 app.post('/generate_assessment', async function (req, res) {
   const repo = 'NEW-TEST-REPO';
