@@ -1,11 +1,11 @@
-const shellExec = command => {
-  if (shell.exec(command).code !== 0) {
-    shell.echo('Error: Git commit failed');
-    shell.exit(1);
+const shellExec = (shell, command) => {
+  if (res = shell.exec(command).code !== 0) {
+    console.error(`Shell command failed: ${command}`);
+    throw new Error(`Shell command failed: ${command}`);
   }
 };
 
-module.exports = function({ ghOrg }) {
+module.exports = function({ ghOrg, shell }) {
   return {
     pushTestAssessmentToGit(url) {
       if (!shell.which('git')) {
@@ -16,10 +16,12 @@ module.exports = function({ ghOrg }) {
 
       shell.cd('assessment-test');
 
-      shellExec('git add .');
-      shellExec('git commit -m "Add test assessment"');
-      shellExec(`git remote add origin ${url}`);
-      shellExec('git push -u origin master');
+      shellExec(shell, 'git init');
+      shellExec(shell, 'git add .');
+      shellExec(shell, 'git commit -m "Add test assessment"');
+      // RIGHT HERE
+      shellExec(shell, `git remote add origin ${url}`);
+      shellExec(shell, 'git push -u origin master');
 
       shell.rm('-rf', '.git');
     },

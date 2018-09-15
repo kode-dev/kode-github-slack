@@ -9,21 +9,24 @@ const github = require('octonode');
 const client = github.client(process.env.GITHUB_ACCESS_TOKEN);
 const ghOrg = client.org(process.env.GITHUB_ORGANIZATION);
 
-const Utils = require('./utils')({ ghOrg });
+const Utils = require('./utils')({ ghOrg, shell });
 
 // Generate repo for candidate
 app.post('/generate_assessment', async function (req, res) {
-/*  const name = 'TEST-REPO'
+  const name = 'TEST-REPO'
         description = 'Test repo for assessment.',
         private = false; // Private repos are only allowed for paid accounts.
 
-  let response;
   try {
-    response = await Utils.createRepo({
+    let response = await Utils.createRepo({
       name,
       description,
       private,
     });
+
+    // Push local files to repo
+    let url = response[0].html_url;
+    Utils.pushTestAssessmentToGit(url);
   }
   catch(e) {
     console.error(e.message);
@@ -31,9 +34,6 @@ app.post('/generate_assessment', async function (req, res) {
       .status(500)
       .send(e.message);
   }
-
-  let url = response[0].url; */
-  let url = "https://api.github.com/repos/kode-dev/TEST-REPO";
 
   res.send('Repo was successfully created.');
 });
