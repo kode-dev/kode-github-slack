@@ -19,6 +19,7 @@
   "dependencies": {
     "dotenv": "^6.0.0",
     "express": "^4.16.3",
-    "octonode": "^0.9.4"
+    "octonode": "^0.9.4",
+    "shelljs": "^0.8.2"
   }
 }
