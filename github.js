@@ -9,7 +9,7 @@ const github = require('octonode');
 const client = github.client(process.env.GITHUB_ACCESS_TOKEN);
 const ghOrg = client.org(process.env.GITHUB_ORGANIZATION);
 
-const Utils = require('./helpers')({ ghOrg });
+const Utils = require('./utils')({ ghOrg });
 
 // Generate repo for candidate
 app.post('/generate_assessment', async function (req, res) {
@@ -34,7 +34,6 @@ app.post('/generate_assessment', async function (req, res) {
 
   let url = response[0].url; */
   let url = "https://api.github.com/repos/kode-dev/TEST-REPO";
-
 
   res.send('Repo was successfully created.');
 });
