@@ -9,21 +9,32 @@ const github = require('octonode');
 const client = github.client(process.env.GITHUB_ACCESS_TOKEN);
 const ghOrg = client.org(process.env.GITHUB_ORGANIZATION);
 
-require('./helpers');
+const Utils = require('./helpers')({ ghOrg });
 
 // Generate repo for candidate
 app.post('/generate_assessment', async function (req, res) {
-  const repo = 'NEW-TEST-REPO';
+/*  const name = 'TEST-REPO'
+        description = 'Test repo for assessment.',
+        private = false; // Private repos are only allowed for paid accounts.
 
   let response;
   try {
-    response = await forkRepo(repo);
+    response = await Utils.createRepo({
+      name,
+      description,
+      private,
+    });
   }
   catch(e) {
+    console.error(e.message);
     res
       .status(500)
       .send(e.message);
   }
+
+  let url = response[0].url; */
+  let url = "https://api.github.com/repos/kode-dev/TEST-REPO";
+
 
   res.send('Repo was successfully created.');
 });
@@ -46,6 +57,7 @@ app.put('/repos/:repoId/collaborators/:collaboratorId', async function(req, res)
     await client.putAsync(path, options);
   }
   catch(e) {
+    console.error(e.message);
     res
       .status(500)
       .send(`An error occurred while adding ${collaboratorId} as a collaborator to ${repoId}.`);
@@ -69,6 +81,7 @@ app.delete('/repos/:repoId/collaborators/:collaboratorId', async function(req, r
     await client.delAsync(path, {});
   }
   catch(e) {
+    console.error(e.message);
     res
       .status(500)
       .send(`An error occurred while removing ${collaboratorId} as a collaborator to ${repoId}.`)
